@@ -51,6 +51,19 @@ const mapState = (component, properties) => {
   }
 };
 
+const defineGetters = (store, getters) => {
+  for (let getter of Object.keys(getters)) {
+    Object.defineProperty(store.getters, getter, {
+      get: function() {
+        return getters[getter](store.state);
+      },
+      set: setterError,
+      configurable: true
+    });
+  }
+  return store.getters;
+}
+
 /**
  * Display an error message if a mapped property is altered outside a store mutation
  */
@@ -59,5 +72,6 @@ function setterError() {
 }
 
 export {
-  mapState
+  mapState,
+  defineGetters
 };

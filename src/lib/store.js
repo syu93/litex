@@ -1,5 +1,6 @@
 import PubSub from './pubsub.js';
 import { HistoryObject } from './history.js';
+import { defineGetters } from './helpers.js';
 
 /**
  * The Store class represent the
@@ -10,6 +11,8 @@ export default class Store {
     this.actions = {};
     this.mutations = {};
     this.state = {};
+    this.getters = {};
+    this.modules = {}
     this.status = 'resting';
     this.history = [];
     
@@ -21,6 +24,14 @@ export default class Store {
     
     if (params.hasOwnProperty('mutations')) {
       this.mutations = params.mutations;
+    }
+        
+    if (params.hasOwnProperty('getters')) {
+      this.getters = defineGetters(this, params.getters);
+    }
+        
+    if (params.hasOwnProperty('modules')) {
+      this.modules = params.modules;
     }
     
     const self = this;
