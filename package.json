@@ -1,0 +1,12 @@
+{
+  "name": "@syu93/litex",
+  "version": "0.1.0",
+  "description": "Litex is a state management package that worked well with Web Components and LitElement. Inspired by Vuex.",
+  "main": "pkg/dist-src/index.js",
+  "module": "pkg/dist-src/index.js",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "syu93",
+  "license": "MIT"
+}
