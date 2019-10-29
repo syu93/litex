@@ -8,8 +8,16 @@
     "build": "pack build"
   },
   "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syu93/litex.git"
+  },
   "author": "syu93",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/syu93/litex/issues"
+  },
+  "homepage": "https://github.com/syu93/litex#readme",
   "dependencies": {},
   "devDependencies": {
     "@pika/pack": "^0.5.0",
