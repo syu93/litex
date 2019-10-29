@@ -51,11 +51,16 @@ const mapState = (component, properties) => {
   }
 };
 
+/**
+ * THe defineGetters method will define all given getters added into the store
+ * @param {Store} store The Store object
+ * @param {Object} getters An object containing the getters methods to add to the store object
+ */
 const defineGetters = (store, getters) => {
   for (let getter of Object.keys(getters)) {
     Object.defineProperty(store.getters, getter, {
       get: function() {
-        return getters[getter](store.state);
+        return getters[getter](store.state, store.getters);
       },
       set: setterError,
       configurable: true
@@ -71,7 +76,34 @@ function setterError() {
   console.error('[Litex][error] : Cannot mutate state property outside of a mutation');
 }
 
+/**
+ * The createProxy method takes an initial state object 
+ * and return a new Proxy that will handle change made to sub properties and dispatch an events
+ * to all the listeners
+ * @param {Object} state The initial state object
+ */
+function createProxy(state) {
+  const self = this;
+  return new Proxy((state || {}), {
+    set(state, key, value) {
+  
+      state[key] = value;
+
+      self.events.publish('stateChange', self.state);
+  
+      if (self.status !== 'mutation') {
+        console.warn(`[Litex][warn] You should use a mutation to set ${key}`);
+      }
+  
+      self.status = 'resting';
+  
+      return true;
+    },
+  });
+}
+
 export {
   mapState,
-  defineGetters
+  defineGetters,
+  createProxy
 };
