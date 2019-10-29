@@ -1,13 +1,15 @@
 import PubSub from './pubsub.js';
 import { HistoryObject } from './history.js';
-import { defineGetters } from './helpers.js';
-
+import { createProxy, defineGetters } from './helpers.js';
+import { consoleTable, rewind } from './console.js';
+import { logger, groupCollapsed } from './logger.js';
 /**
  * The Store class represent the
  */
 export default class Store {
 
   constructor(params = {}) {
+    this._isDev = window.location.hostname === "localhost" ? true : false;
     this.actions = {};
     this.mutations = {};
     this.state = {};
@@ -33,24 +35,11 @@ export default class Store {
     if (params.hasOwnProperty('modules')) {
       this.modules = params.modules;
     }
-    
-    const self = this;
-    this.state = new Proxy((params.state || {}), {
-      set(state, key, value) {
-    
-        state[key] = value;
 
-        self.events.publish('stateChange', self.state);
-    
-        if (self.status !== 'mutation') {
-          console.warn(`You should use a mutation to set ${key}`);
-        }
-    
-        self.status = 'resting';
-    
-        return true;
-      },
-    });
+    // Create a proxy listener that will intercept every change made to a sub property of the state object
+    // And dispatch to all listeners the new state
+    const createProxyMethod = createProxy.bind(this);
+    this.state = createProxyMethod(params.state);
 
     // Start recording history
     const baseState = new HistoryObject(Date.now(), 'Base State', {...this.state}, { ...this.state });
@@ -60,7 +49,16 @@ export default class Store {
     window.$store = this;
     // Define WebComponent access
     HTMLElement.prototype.$store = this;
-    console.state = () => console.table(this.history);
+    console.state = consoleTable.bind(this);
+    console.state.rewind = rewind.bind(this);
+
+    // Dispaly Litex ready
+    if (this._isDev) {
+      groupCollapsed('log', 'State management', () => {
+        logger('log', `Use : "console.state()" To dispaly the state change history`);
+        logger('log', `Use : "console.state.rewind(INDEX)" To navigate into state history`);
+      });
+    }
   }
 
   dispatch(actionKey, payload) {
@@ -70,8 +68,9 @@ export default class Store {
       return false;
     }
   
-    console.groupCollapsed(`[Litex] ACTION : ${actionKey}`);
-    console.info('[Litex] : ', payload);
+    if (this._isDev) {
+      groupCollapsed('log', `ACTION : ${actionKey}`, () => logger('log', payload));
+    }
   
     this.status = 'action';
   
@@ -85,7 +84,7 @@ export default class Store {
   commit(mutationKey, payload) {
 
     if (typeof this.mutations[mutationKey] !== 'function') {
-      console.error(`[Litex][error] Mutation "${mutationKey}" doesn't exist`);
+      logger('error', `[Litex][error] Mutation "${mutationKey}" doesn't exist`);
       return false;
     }
   
