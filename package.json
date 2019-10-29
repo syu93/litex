@@ -4,8 +4,23 @@
   "description": "Litex is a state management package that works well with Web Components and LitElement. Inspired by Vuex.",
   "main": "src/index.js",
   "module": "src/index.js",
-  "scripts": {},
+  "scripts": {
+    "build": "pack build"
+  },
   "keywords": [],
   "author": "syu93",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@pika/pack": "^0.5.0",
+    "@pika/plugin-build-web": "^0.7.1",
+    "@pika/plugin-standard-pkg": "^0.7.1"
+  },
+  "@pika/pack": {
+    "pipeline": [
+      [
+        "@pika/plugin-standard-pkg"
+      ]
+    ]
+  }
 }
