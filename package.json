@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "module": "src/index.js",
   "scripts": {
-    "build": "pack build"
+    "build": "npx @pika/pack build"
   },
   "keywords": [],
   "repository": {

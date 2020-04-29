@@ -10,15 +10,15 @@ export function logger(level, message, nobadge = false) {
   switch(level) {
     case 'log':
     case 'info':
-      console.log(`%c[Litex] %c${message}`, colors.log, colors.clear);
+      console.log(`%c[Litex]%c ${message}`, colors.log, colors.clear);
     case 'warn':
-      console.warn(`%c[Litex][warn] %c${message}`, colors.warn, colors.clear);
+      console.warn(`%c[Litex][warn]%c ${message}`, colors.warn, colors.clear);
     case 'error':
       group('error', 'Error', () => {
         console.error(message)
       });
     default:
-      console.log(`%c[Litex] %c${message}`, colors.log, colors.clear);
+      console.log(`%c[Litex]%c ${message}`, colors.log, colors.clear);
   }
 }
 
@@ -30,7 +30,6 @@ export function groupCollapsed(level, title, callback) {
 }
 
 export function group(level, title, callback) {
-  console.log(title)
   console.group(`%c[Litex] ${title}`, colors[level]);
   callback();
   console.groupEnd();

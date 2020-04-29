@@ -2,8 +2,7 @@ import { createProxy } from './helpers.js';
 import { group } from './logger.js';
 
 function consoleTable() {
-  group('log', `Show history`, () => console.table(this.history));
-  return null;
+  return group('log', `Show history`, () => console.table(this.history));
 }
 
 function rewind(index) {

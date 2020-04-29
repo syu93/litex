@@ -1,15 +1,16 @@
 import PubSub from './pubsub.js';
 import { HistoryObject } from './history.js';
-import { createProxy, defineGetters } from './helpers.js';
+import { createProxy, defineGetters, getSubmodules } from './helpers.js';
 import { consoleTable, rewind } from './console.js';
 import { logger, groupCollapsed } from './logger.js';
+
 /**
  * The Store class represent the
  */
 export default class Store {
 
   constructor(params = {}) {
-    this._isDev = window.location.hostname === "localhost" ? true : false;
+    this._isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? true : false;
     this.actions = {};
     this.mutations = {};
     this.state = {};
@@ -34,6 +35,13 @@ export default class Store {
         
     if (params.hasOwnProperty('modules')) {
       this.modules = params.modules;
+      for (let [ key, module ] of Object.entries(this.modules)) {
+        this.actions = Object.assign(this.actions, module.actions);
+        this.mutations = Object.assign(this.mutations, module.mutations);
+
+        // params.state = Object.assign(params.state, module.state);
+        this.getters = Object.assign(this.getters, module.getters);
+      }
     }
 
     // Create a proxy listener that will intercept every change made to a sub property of the state object

@@ -7,6 +7,7 @@
  * @param {Array/Object} properties The property to map to the state
  */
 const mapState = (component, properties) => {
+  // FIXME : Add shallow equal to check if it should can requestUpdate
   // Map properties to any item from the given array
   if (properties instanceof Array) {
     for (let property of properties) {
@@ -102,8 +103,16 @@ function createProxy(state) {
   });
 }
 
+function registerModule(path = [], module) {
+  // Recusive loop to get all sub module
+  // Resgister action and mutation with the right ctx object
+  // Make accessible root state
+  // Add module state in root state as namespace key
+}
+
 export {
   mapState,
   defineGetters,
-  createProxy
+  createProxy,
+  getSubmodules
 };
