@@ -1,6 +1,6 @@
 import PubSub from './pubsub.js';
 import { HistoryObject } from './history.js';
-import { createProxy, defineGetters, getSubmodules } from './helpers.js';
+import { createProxy, defineActions, defineGetters, isPromise, registerModules } from './helpers.js';
 import { consoleTable, rewind } from './console.js';
 import { logger, groupCollapsed } from './logger.js';
 
@@ -11,46 +11,42 @@ export default class Store {
 
   constructor(params = {}) {
     this._isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? true : false;
-    this.actions = {};
-    this.mutations = {};
+    this.actions = new PubSub();
+    this.mutations = new PubSub();
     this.state = {};
+    this._state = {};
     this.getters = {};
     this.modules = {}
     this.status = 'resting';
     this.history = [];
-    
+
     this.events = new PubSub();
     
-    if (params.hasOwnProperty('actions')) {
-      this.actions = params.actions;
-    }
-    
-    if (params.hasOwnProperty('mutations')) {
-      this.mutations = params.mutations;
-    }
-        
-    if (params.hasOwnProperty('getters')) {
-      this.getters = defineGetters(this, params.getters);
-    }
-        
-    if (params.hasOwnProperty('modules')) {
-      this.modules = params.modules;
-      for (let [ key, module ] of Object.entries(this.modules)) {
-        this.actions = Object.assign(this.actions, module.actions);
-        this.mutations = Object.assign(this.mutations, module.mutations);
+    registerModules(this, { root: params });
+    // if (params.hasOwnProperty('actions')) {
+    //   defineActions(this, params.actions, '', true);
+    // }
 
-        // params.state = Object.assign(params.state, module.state);
-        this.getters = Object.assign(this.getters, module.getters);
-      }
-    }
+    // if (params.hasOwnProperty('mutations')) {
+    //   this.mutations = params.mutations;
+    // }
 
+    // if (params.hasOwnProperty('getters')) {
+    //   this.getters = defineGetters(this, params.getters);
+    // }
+
+    // if (params.hasOwnProperty('modules')) {
+    //   registerModules(this, params.modules);
+    // }
+console.log(this._state);
     // Create a proxy listener that will intercept every change made to a sub property of the state object
     // And dispatch to all listeners the new state
     const createProxyMethod = createProxy.bind(this);
-    this.state = createProxyMethod(params.state);
+    this.state = createProxyMethod(this._state);
+    this._state = {};
 
     // Start recording history
-    const baseState = new HistoryObject(Date.now(), 'Base State', {...this.state}, { ...this.state });
+    const baseState = new HistoryObject(Date.now(), 'Base State', { ...this.state }, { ...this.state });
     this.history.push(baseState);
 
     // Define global score to access store
@@ -71,22 +67,31 @@ export default class Store {
 
   dispatch(actionKey, payload) {
   
-    if (typeof this.actions[actionKey] !== 'function') {
-      console.error(`[Litex][error] Action "${actionKey}" is called but doesn't exist.`);
-      return false;
-    }
+    // if (this._isDev && typeof this.actions[actionKey] !== 'function') {
+    //   console.error(`[Litex][error] Action "${actionKey}" is called but doesn't exist.`);
+    //   return;
+    // }
   
     if (this._isDev) {
       groupCollapsed('log', `ACTION : ${actionKey}`, () => logger('log', payload));
     }
   
     this.status = 'action';
-  
-    this.actions[actionKey]({ ...this, dispatch: this.dispatch.bind(this), commit: this.commit.bind(this) }, payload);
+
+    const actionsResults = this.actions.publish(actionKey, payload);
+
+    let res = Promise.all(actionsResults);
+
+    
+    if (!isPromise(res)) {
+      res = Promise.resolve(res);
+    }
   
     console.groupEnd();
   
-    return true;
+    // Return the actions result so it can be anything such as promise
+    // So in the other hand we could await
+    return res;
   }
 
   commit(mutationKey, payload) {
