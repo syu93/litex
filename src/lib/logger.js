@@ -11,14 +11,18 @@ export function logger(level, message, nobadge = false) {
     case 'log':
     case 'info':
       console.log(`%c[Litex]%c ${message}`, colors.log, colors.clear);
+      break;
     case 'warn':
       console.warn(`%c[Litex][warn]%c ${message}`, colors.warn, colors.clear);
+      break;
     case 'error':
       group('error', 'Error', () => {
         console.error(message)
       });
+      break;
     default:
       console.log(`%c[Litex]%c ${message}`, colors.log, colors.clear);
+      break;
   }
 }
 

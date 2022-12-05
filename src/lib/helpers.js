@@ -87,13 +87,13 @@ export function defineActions(store, actions, namespace = '', absolutePath = '')
   // If no actions defined, return
   if (!actions) return;
 
-  // Loop through actions and craete a subscription
+  // Loop through actions and create a subscription
   for (let [ key, action ] of Object.entries(actions)) {
     const actionsPath = [ namespace, key ].filter(path => path).join('/');
 
-    createLocalContext(store, absolutePath);
+    const context = createLocalContext(store, absolutePath);
 
-    // store.actions.subscribe(actionsPath, action, {});
+    store.actions.subscribe(actionsPath, action, context);
   }
 }
 
@@ -130,7 +130,19 @@ export function createProxy(state) {
   });
 }
 
+/**
+ * The registerModules methode take a store and its sub modules and register all components
+ * 
+ * @param {Object} store The Store object containing our states
+ * @param {Object} modules Store sub modules array containing sub stores to be registered
+ * @param {String} parentNamespace The namespace (~path) of the parent store
+ * @param {String} parentAsbsolutePath The absolute path of the parent store
+ */
 export function registerModules(store, modules, parentNamespace = '', parentAsbsolutePath = '') {
+  // Recusive loop to get all sub module
+  // Resgister action and mutation with the right ctx object
+  // Make accessible root state
+  // Add module state in root state as namespace key
   for (let [ key, module ] of Object.entries(modules)) {
     // If the module should be namespaced
     // We use the module key to create a module name
@@ -147,6 +159,8 @@ export function registerModules(store, modules, parentNamespace = '', parentAsbs
 
     // Define actions with local states
     defineActions(store, module.actions, moduleNamespace, absolutePath);
+  
+    // Define mutations for local state
     
 
     // store.actions.subscribe();
@@ -154,13 +168,7 @@ export function registerModules(store, modules, parentNamespace = '', parentAsbs
       // console.log(key, ' has a submodules');
       registerModules(store, module.modules, moduleNamespace, absolutePath);
     }
-
-    return 
   }
-  // Recusive loop to get all sub module
-  // Resgister action and mutation with the right ctx object
-  // Make accessible root state
-  // Add module state in root state as namespace key
 }
 
 /*** Helpers ***/
@@ -177,12 +185,14 @@ export function createLocalContext(store, path) {
   const localState = getStateFromPath(store, path);
   console.log(localState);
 
+  // Only create the rootState property if not at the root
   const context = {
     state: { ...localState },
-    rootState: { ...store._state },
+    ...(path ? { rootState: { ...store._state } } : {}),
     dispatch: store.dispatch.bind(store),
     commit: store.commit.bind(store)
   };
+  return context;
 }
 
 function getStateFromPath(store, path) {

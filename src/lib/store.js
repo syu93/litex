@@ -23,9 +23,6 @@ export default class Store {
     this.events = new PubSub();
     
     registerModules(this, { root: params });
-    // if (params.hasOwnProperty('actions')) {
-    //   defineActions(this, params.actions, '', true);
-    // }
 
     // if (params.hasOwnProperty('mutations')) {
     //   this.mutations = params.mutations;
@@ -38,7 +35,7 @@ export default class Store {
     // if (params.hasOwnProperty('modules')) {
     //   registerModules(this, params.modules);
     // }
-console.log(this._state);
+
     // Create a proxy listener that will intercept every change made to a sub property of the state object
     // And dispatch to all listeners the new state
     const createProxyMethod = createProxy.bind(this);
@@ -96,10 +93,10 @@ console.log(this._state);
 
   commit(mutationKey, payload) {
 
-    if (typeof this.mutations[mutationKey] !== 'function') {
-      logger('error', `[Litex][error] Mutation "${mutationKey}" doesn't exist`);
-      return false;
-    }
+    // if (typeof this.mutations[mutationKey] !== 'function') {
+    //   logger('error', `[Litex][error] Mutation "${mutationKey}" doesn't exist`);
+    //   return false;
+    // }
   
     this.status = 'mutation';
   
